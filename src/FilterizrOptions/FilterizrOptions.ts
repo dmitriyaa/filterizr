@@ -3,10 +3,12 @@ import { BaseOptions, RawOptions } from './../types/interfaces';
 import { defaultOptions } from '.';
 import { checkOptionForErrors, merge } from '../utils';
 import ActiveFilter from '../ActiveFilter';
-import { Filter } from '../types';
+import { Filter, ModifyFilteredItems } from '../types';
+import FilterItem from '../FilterItem';
 
 export interface Options extends BaseOptions {
   filter: ActiveFilter;
+  modifyFilteredItems?: ModifyFilteredItems;
 }
 
 export default class FilterizrOptions {
@@ -36,6 +38,9 @@ export default class FilterizrOptions {
   public set filter(filter: Filter) {
     this.options.filter.set(filter);
   }
+
+  public modifyFilteredItems = (filterItems: FilterItem[]): FilterItem[] =>
+    filterItems;
 
   public toggleFilter(filter: string): void {
     this.options.filter.toggle(filter);
@@ -105,6 +110,7 @@ export default class FilterizrOptions {
       'alternate',
     ]);
     checkOptionForErrors('filter', options.filter, 'string|number|array');
+    checkOptionForErrors('filter', options.modifyFilteredItems, 'function');
     checkOptionForErrors('filterOutCss', options.filterOutCss, 'object');
     checkOptionForErrors('filterInCss', options.filterOutCss, 'object');
     checkOptionForErrors(

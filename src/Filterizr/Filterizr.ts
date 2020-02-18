@@ -1,5 +1,5 @@
 import { FILTERIZR_STATE } from '../config';
-import { Filter } from '../types';
+import { Filter, ModifyFilteredItems } from '../types';
 import { RawOptions, Destructible, Dimensions } from '../types/interfaces';
 import { getHTMLElement, debounce } from '../utils';
 import EventReceiver from '../EventReceiver';
@@ -84,6 +84,20 @@ export default class Filterizr implements Destructible {
       : category.toString();
 
     this.options.filter = category;
+    this.render();
+  }
+
+  /**
+   * Adjust items after the got filtered, by user's needs
+   * @param modifyFilteredItems
+   */
+  public modifyFilteredItems(modifyFilteredItems: ModifyFilteredItems): void {
+    const { filterContainer } = this;
+
+    filterContainer.trigger('filteringStart');
+    filterContainer.filterizrState = FILTERIZR_STATE.FILTERING;
+
+    this.options.modifyFilteredItems = modifyFilteredItems;
     this.render();
   }
 
@@ -208,18 +222,23 @@ export default class Filterizr implements Destructible {
     const { filterContainer, filterItems, options } = this;
     const itemsToFilterIn = filterItems.getFiltered(options.filter);
 
+    // after items are filtered with the original filter, allowing user to adjust
+    // the list by their needs. For example to slice the list, to onlu show 6 items
+    // basically with this, user can do any kind of items manipulation.
+    const adjustedItems = options.modifyFilteredItems(itemsToFilterIn);
+
     filterItems.getFilteredOut(options.filter).forEach((filterItem): void => {
       filterItem.filterOut();
     });
 
     const { containerHeight, itemsPositions } = makeLayoutPositions(
       filterContainer.dimensions.width,
-      itemsToFilterIn.map(({ dimensions }): Dimensions => dimensions),
+      adjustedItems.map(({ dimensions }): Dimensions => dimensions),
       this.options.get()
     );
     filterContainer.setHeight(containerHeight);
 
-    itemsToFilterIn.forEach((filterItem, index): void => {
+    adjustedItems.forEach((filterItem, index): void => {
       filterItem.filterIn(itemsPositions[index]);
     });
   }
@@ -245,13 +264,13 @@ export default class Filterizr implements Destructible {
   private bindEvents(): void {
     const { filterItems, windowEventReceiver } = this;
     windowEventReceiver.on('resize', debounce(
-      (): void => {
-        filterItems.styles.updateWidthWithTransitionsDisabled();
-        this.render();
-      },
-      50,
-      false
-    ) as EventListener);
+        (): void => {
+          filterItems.styles.updateWidthWithTransitionsDisabled();
+          this.render();
+        },
+        50,
+        false
+      ) as EventListener);
   }
 
   /**

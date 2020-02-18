@@ -17,6 +17,7 @@ export default class FilterizrOptions {
   public constructor(userOptions: RawOptions) {
     const options = merge({}, defaultOptions, this.validate(userOptions));
     this.options = this.convertToFilterizrOptions(options);
+    this.modifyFilteredItems = this.options.modifyFilteredItems;
   }
 
   public get isSpinnerEnabled(): boolean {

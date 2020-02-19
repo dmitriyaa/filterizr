@@ -1,6 +1,7 @@
 import { LAYOUT } from './../config';
 import { RawOptions } from '../types/interfaces';
 import { noop } from '../utils';
+import FilterItem from '../FilterItem';
 
 const defaultOptions: RawOptions = {
   animationDuration: 0.5,
@@ -18,6 +19,7 @@ const defaultOptions: RawOptions = {
   delayMode: 'progressive',
   easing: 'ease-out',
   filter: 'all',
+  modifyFilteredItems: (filterItems: FilterItem[]): FilterItem[] => filterItems,
   filterOutCss: {
     opacity: 0,
     transform: 'scale(0.5)',
